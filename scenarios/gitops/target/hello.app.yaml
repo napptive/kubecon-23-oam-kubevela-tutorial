@@ -11,9 +11,9 @@ spec:
         ports:
         - port: 8080
           expose: true
-      env:
-      - name: MSG
-        value: "Hello KubeCon"
+        env:
+        - name: MSG
+          value: "Hello KubeCon"
       traits:
         - type: gateway     
           properties:
