@@ -1,0 +1,21 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: hello-app
+spec:
+  components:
+    - name: hello
+      type: webservice
+      properties:
+        image: napptive/hello-world:v0.1.0
+        ports:
+        - port: 8080
+          expose: true
+      env:
+      - name: MSG
+        value: "Hello KubeCon"
+      traits:
+        - type: gateway     
+          properties:
+            http: 
+              "/": 8080

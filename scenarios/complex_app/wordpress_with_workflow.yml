@@ -1,0 +1,103 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: my-wordpress-wf
+  annotations:
+    version: v1.0.0
+    description: "Wordpress with MySQL database"
+spec:
+  components:
+  - name: wordpress
+    type: webservice
+    properties:
+      image:  bitnami/wordpress:latest
+      ports:
+      - port: 8080
+        expose: true
+      env:
+      - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+        value: "bitnami_wordpress"
+      - name: MYSQL_CLIENT_FLAVOR
+        value: "mysql"
+      - name: MYSQL_CLIENT_DATABASE_HOST
+        value: "mysql"
+      - name: WORDPRESS_BLOG_NAME
+        value: "KubeCon blog"
+      - name: WORDPRESS_DATABASE_HOST
+        value: "mysql"
+    traits:
+    - type: gateway  # Set to gateway     
+      properties:
+        http: 
+          "/": 8080 
+    - type: service-binding
+      properties:
+        envMappings:
+          MYSQL_CLIENT_DATABASE_ROOT_PASSWORD:
+            secret: mysql-credentials
+            key: password 
+          MYSQL_CLIENT_CREATE_DATABASE_PASSWORD:
+            secret: mysql-credentials
+            key: password  
+          WORDPRESS_DATABASE_PASSWORD:
+            secret: mysql-credentials
+            key: password   
+          WORDPRESS_DATABASE_USER:
+            secret: mysql-credentials
+            key: user    
+          MYSQL_CLIENT_CREATE_DATABASE_USER:
+            secret: mysql-credentials
+            key: user 
+  - name: mysql
+    type: webservice
+    properties:
+      image: mysql:8.0.32
+      cpu: "150m" 
+      memory: 256Mi
+      ports:
+      - port: 3306
+        expose: true
+    traits:
+      - type: storage
+        properties:
+          secret:
+            - name: mysql-credentials
+              mountToEnv:
+                envName: MYSQL_ROOT_PASSWORD
+                secretKey: password
+              data:
+                # Don't forget to change the password
+                user: cm9vdA==
+                password: Y2hhbmdldGhpcw==
+  - name: discoversvc
+    type: webservice
+    properties:
+      image: ealen/echo-server
+      cpu: "150m" 
+      memory: 256Mi
+      ports:
+      - port: 80
+        expose: true
+  workflow:
+    steps:
+      - name: deploy-fake-discover-svc
+        type: apply-component
+        properties:
+          component: discoversvc
+      - name: deploy-mysql
+        type: apply-component
+        properties:
+          component: mysql
+      - name: deploy-wordpress
+        type: apply-component
+        properties:
+          component: wordpress
+      - name: notify
+        type: webhook
+        properties:
+          url:
+            value: http://discoversvc.kubecon/register/app
+      - name: deployed
+        type: print-message-in-status
+        properties:
+          message: "App has been deployed, connect through http://localhost:8090/ or http://localhost depending on the cluster deployment"

@@ -1,0 +1,73 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: my-wordpress
+  annotations:
+    version: v1.0.0
+    description: "Wordpress with MySQL database"
+spec:
+  components:
+  - name: wordpress
+    type: webservice
+    properties:
+      image:  bitnami/wordpress:latest
+      #cpu: "150m" 
+      #memory: 256Mi
+      ports:
+      - port: 8080
+        expose: true
+      env:
+      - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+        value: "bitnami_wordpress"
+      - name: MYSQL_CLIENT_FLAVOR
+        value: "mysql"
+      - name: MYSQL_CLIENT_DATABASE_HOST
+        value: "mysql"
+      - name: WORDPRESS_BLOG_NAME
+        value: "KubeCon blog"
+      - name: WORDPRESS_DATABASE_HOST
+        value: "mysql"
+    traits:
+    - type: gateway  # Set to gateway     
+      properties:
+        http: 
+          "/": 8080 
+    - type: service-binding
+      properties:
+        envMappings:
+          MYSQL_CLIENT_DATABASE_ROOT_PASSWORD:
+            secret: mysql-credentials
+            key: password 
+          MYSQL_CLIENT_CREATE_DATABASE_PASSWORD:
+            secret: mysql-credentials
+            key: password  
+          WORDPRESS_DATABASE_PASSWORD:
+            secret: mysql-credentials
+            key: password   
+          WORDPRESS_DATABASE_USER:
+            secret: mysql-credentials
+            key: user    
+          MYSQL_CLIENT_CREATE_DATABASE_USER:
+            secret: mysql-credentials
+            key: user 
+  - name: mysql
+    type: webservice
+    properties:
+      image: mysql:8.0.32
+      cpu: "150m" 
+      memory: 256Mi
+      ports:
+      - port: 3306
+        expose: true
+    traits:
+      - type: storage
+        properties:
+          secret:
+            - name: mysql-credentials
+              mountToEnv:
+                envName: MYSQL_ROOT_PASSWORD
+                secretKey: password
+              data:
+                # Don't forget to change the password
+                user: cm9vdA==
+                password: Y2hhbmdldGhpcw==
