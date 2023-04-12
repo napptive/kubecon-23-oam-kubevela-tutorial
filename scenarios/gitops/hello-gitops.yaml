@@ -7,6 +7,7 @@ spec:
   - name: deploy-hello-world
     type: kustomize
     properties:
+      targetNamespace: kubecon
       repoType: git
       # replace it with your own repo url to explore further
       url: https://github.com/napptive/kubecon-23-oam-kubevela-tutorial

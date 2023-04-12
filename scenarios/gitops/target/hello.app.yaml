@@ -7,7 +7,7 @@ spec:
     - name: hello
       type: webservice
       properties:
-        image: napptive/hello-world:v0.1.0
+        image: napptive/hello-world:v0.0.1
         ports:
         - port: 8080
           expose: true
