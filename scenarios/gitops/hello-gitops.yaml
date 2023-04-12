@@ -17,6 +17,6 @@ spec:
       pullInterval: 30s
       git:
         # the branch name
-        branch: initial_commit
+        branch: main
       # the path to sync
       path: ./scenarios/gitops/target
