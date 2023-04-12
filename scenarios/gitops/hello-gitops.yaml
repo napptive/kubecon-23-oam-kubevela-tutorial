@@ -1,0 +1,22 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: hello-gitops
+spec:
+  components:
+  - name: deploy-hello-world
+    type: kustomize
+    properties:
+      targetNamespace: kubecon
+      repoType: git
+      # replace it with your own repo url to explore further
+      url: https://github.com/napptive/kubecon-23-oam-kubevela-tutorial
+      # replace it with your git secret if it's a private repo
+      # secretRef: git-secret
+      # the pull interval time, set to 30s for demo purposes
+      pullInterval: 30s
+      git:
+        # the branch name
+        branch: main
+      # the path to sync
+      path: ./scenarios/gitops/target

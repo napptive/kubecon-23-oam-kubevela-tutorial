@@ -1,0 +1,19 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: remote-deployment
+spec:
+  components:
+    - name: nginx-basic
+      type: webservice
+      properties:
+        image: nginx
+      traits:
+        - type: expose
+          properties:
+            port: [80]
+  policies:
+    - name: topology-clusters
+      type: topology
+      properties:
+        clusters: ["managed"]
